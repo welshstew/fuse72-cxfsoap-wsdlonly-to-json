@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+    <!-- Camel Routes -->
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring"
+                  xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:sim="http://www.example.org/SimpleService/">
+
+        <dataFormats>
+            <xmljson id="xmljsonWithOptions"
+                     forceTopLevelObject="false"
+                     trimSpaces="true"
+                     skipNamespaces="true"
+                     removeNamespacePrefixes="true" />
+        </dataFormats>
+
+        <route id="cxfRoute">
+            <from uri="cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&amp;dataFormat=RAW"/>
+            <setBody>
+                <xpath>//soap:Body/sim:NewOperation</xpath>
+            </setBody>
+            <log message="XML body is ${body}"/>
+            <marshal ref="xmljsonWithOptions" />
+            <log message="Body to go to AMQ is ${body}"/>
+            <!-- send to AMQ here -->
+
+            <!-- construct a response to the WS Client -->
+            <setBody>
+                <simple>resource:classpath:static/response.xml</simple>
+            </setBody>
+            <setHeader headerName="Content-Type">
+                <constant>application/xml</constant>
+            </setHeader>
+            <log message="Body returned to WS-Client is ${body}"/>
+        </route>
+    </camelContext>
+
+
+</beans>

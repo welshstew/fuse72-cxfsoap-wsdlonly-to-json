@@ -1,0 +1,8 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sim="http://www.example.org/SimpleService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <sim:NewOperationResponse>
+            <out>OK</out>
+        </sim:NewOperationResponse>
+    </soapenv:Body>
+</soapenv:Envelope>
