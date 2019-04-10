@@ -26,6 +26,12 @@ No JAXB Marshalling, just plain soap body to json.  All in one neat camel route.
 </route>
 ```
 
+```text
+mvn clean spring-boot:run
+siege --rc=./siegerc
+```
+
+
 
 ## Further Documentation
 
