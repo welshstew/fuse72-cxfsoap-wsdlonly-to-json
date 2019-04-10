@@ -28,7 +28,7 @@ No JAXB Marshalling, just plain soap body to json.  All in one neat camel route.
 
 ```text
 mvn clean spring-boot:run
-siege --rc=./siegerc
+siege --rc=.siegerc
 ```
 
 
