@@ -1,0 +1,1 @@
+http://localhost:8080/services/SomeService POST < soap-request.xml

@@ -1,0 +1,10 @@
+verbose = true
+logging = true
+protocol = HTTP/1.1
+time = 1M
+connection = close
+concurrent = 1 #Number of concurrent requests
+file = ./urls.txt
+delay = 0 #If you are using for benchmarking value should be 0
+benchmark = true
+show-logfile = false

@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sim="http://www.example.org/SimpleService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <sim:NewOperation>
+            <FirstName>Camel</FirstName>
+            <LastName>Fuse</LastName>
+            <Other>LUSH</Other>
+        </sim:NewOperation>
+    </soapenv:Body>
+</soapenv:Envelope>
