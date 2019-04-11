@@ -37,5 +37,7 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
                 .removeHeaders("*", "breadcrumbId")
                 .to("jms:queue:hello");
 
+        //TODO: make the jms destination configurable via properties
+
     }
 }
