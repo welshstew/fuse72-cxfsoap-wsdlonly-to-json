@@ -23,8 +23,8 @@
             </setBody>
             <log message="XML body is ${body}"/>
             <marshal ref="xmljsonWithOptions" />
-            <log message="Body to go to AMQ is ${body}"/>
             <convertBodyTo type="java.lang.String" />
+            <log message="Body to go to AMQ is ${body}"/>
             <!-- send to AMQ here -->
             <to uri="direct:sendToJms" />
             <!-- construct a response to the WS Client -->
@@ -37,7 +37,7 @@
             <log message="Body returned to WS-Client is ${body}"/>
         </route>
 
-        <route>
+        <route id="jmsSend">
             <from uri="direct:sendToJms"/>
             <setExchangePattern pattern="InOnly" />
             <removeHeaders pattern="*" excludePattern="breadcrumbId" />

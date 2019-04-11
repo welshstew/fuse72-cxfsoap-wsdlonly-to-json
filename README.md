@@ -2,28 +2,36 @@
 
 This is an example use-case where a webservice is required.
 
-No JAXB Marshalling, just plain soap body to json.  All in one neat camel route.
+No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes.
 
 ```xml
-<route id="cxfRoute">
-    <from uri="cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&amp;dataFormat=RAW"/>
-    <setBody>
-        <xpath>//soap:Body/sim:NewOperation</xpath>
-    </setBody>
-    <log message="XML body is ${body}"/>
-    <marshal ref="xmljsonWithOptions" />
-    <log message="Body to go to AMQ is ${body}"/>
-    <!-- send to AMQ here -->
+        <route id="cxfRoute">
+            <from uri="cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&amp;dataFormat=RAW"/>
+            <setBody>
+                <xpath>//soap:Body/sim:NewOperation</xpath>
+            </setBody>
+            <log message="XML body is ${body}"/>
+            <marshal ref="xmljsonWithOptions" />
+            <convertBodyTo type="java.lang.String" />
+            <log message="Body to go to AMQ is ${body}"/>
+            <!-- send to AMQ here -->
+            <to uri="direct:sendToJms" />
+            <!-- construct a response to the WS Client -->
+            <setBody>
+                <simple>resource:classpath:static/response.xml</simple>
+            </setBody>
+            <setHeader headerName="Content-Type">
+                <constant>application/xml</constant>
+            </setHeader>
+            <log message="Body returned to WS-Client is ${body}"/>
+        </route>
 
-    <!-- construct a response to the WS Client -->
-    <setBody>
-        <simple>resource:classpath:static/response.xml</simple>
-    </setBody>
-    <setHeader headerName="Content-Type">
-        <constant>application/xml</constant>
-    </setHeader>
-    <log message="Body returned to WS-Client is ${body}"/>
-</route>
+        <route id="jmsSend">
+            <from uri="direct:sendToJms"/>
+            <setExchangePattern pattern="InOnly" />
+            <removeHeaders pattern="*" excludePattern="breadcrumbId" />
+            <to uri="jms:queue:hello" />
+        </route>
 ```
 
 ```text
