@@ -15,7 +15,9 @@
  */
 package com.nullendpoint;
 
+import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
 import org.apache.camel.Endpoint;
+import org.apache.camel.component.jms.JmsComponent;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -27,11 +29,23 @@ import java.util.HashMap;
  * The Spring-boot main class.
  */
 @SpringBootApplication
-@ImportResource({"classpath:spring/camel-context.xml"})
+//@ImportResource({"classpath:spring/camel-context.xml"})
 public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+    }
+
+    @Bean
+    ActiveMQJMSConnectionFactory artemisConnectionFactory(){
+        return new ActiveMQJMSConnectionFactory("tcp://localhost:61616", "theuser", "Thepassword1!");
+    }
+
+    @Bean
+    JmsComponent jms(ActiveMQJMSConnectionFactory artemisConnectionFactory){
+        JmsComponent jmsComponent = new JmsComponent();
+        jmsComponent.setConnectionFactory(artemisConnectionFactory);
+        return jmsComponent;
     }
 
 }
