@@ -24,8 +24,9 @@
             <log message="XML body is ${body}"/>
             <marshal ref="xmljsonWithOptions" />
             <log message="Body to go to AMQ is ${body}"/>
+            <convertBodyTo type="java.lang.String" />
             <!-- send to AMQ here -->
-
+            <to uri="direct:sendToJms" />
             <!-- construct a response to the WS Client -->
             <setBody>
                 <simple>resource:classpath:static/response.xml</simple>
@@ -35,7 +36,27 @@
             </setHeader>
             <log message="Body returned to WS-Client is ${body}"/>
         </route>
+
+        <route>
+            <from uri="direct:sendToJms"/>
+            <setExchangePattern pattern="InOnly" />
+            <removeHeaders pattern="*" excludePattern="breadcrumbId" />
+            <to uri="jms:queue:hello" />
+        </route>
+
     </camelContext>
+
+    <!-- setup ActiveMQ Artemis connection factory -->
+    <bean id="artemisConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory">
+        <constructor-arg index="0" value="tcp://192.168.122.187:61616"/>
+        <constructor-arg index="1" value="admin"/>
+        <constructor-arg index="2" value="admin"/>
+    </bean>
+
+    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+        <!-- specify connection factory on JMS component -->
+        <property name="connectionFactory" ref="artemisConnectionFactory"/>
+    </bean>
 
 
 </beans>

@@ -53,6 +53,10 @@
       <artifactId>camel-xmljson</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jms</artifactId>
+    </dependency>
+    <dependency>
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
       <version>1.2.5</version>
@@ -61,6 +65,24 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
+
+    <!-- activemq artemis -->
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-spring-integration</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-jms-pool</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_2.0_spec</artifactId>
+    </dependency>
+
     <!-- testing -->
     <dependency>
       <groupId>junit</groupId>
