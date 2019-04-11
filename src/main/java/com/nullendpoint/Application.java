@@ -37,8 +37,8 @@ public class Application {
     }
 
     @Bean
-    ActiveMQJMSConnectionFactory artemisConnectionFactory(){
-        return new ActiveMQJMSConnectionFactory("tcp://localhost:61616", "theuser", "Thepassword1!");
+    ActiveMQJMSConnectionFactory artemisConnectionFactory(ArtemisJmsConfiguration config){
+        return new ActiveMQJMSConnectionFactory(config.getUrl(), config.getUsername(), config.getPassword());
     }
 
     @Bean
