@@ -1,0 +1,32 @@
+@startuml
+
+title Bridging legacy systems with modern applications
+
+box "legacy" #LightBlue
+actor OldSystem
+end box
+
+box "Red Hat Middleware"
+participant FuseApplication
+database AMQ7
+end box
+
+box "New Developments"
+collections NodeJsApps
+collections SpringBootApps
+end box
+
+
+OldSystem -> FuseApplication: SOAP Request
+activate FuseApplication
+FuseApplication -> FuseApplication: Select XML
+FuseApplication -> FuseApplication: xml-to-json
+FuseApplication -> AMQ7: send JMS message
+FuseApplication -> OldSystem: SOAP Response
+deactivate FuseApplication
+
+NodeJsApps -> AMQ7: STOMP/AMQP
+SpringBootApps -> AMQ7: AMQP/JMS2
+
+
+@enduml
