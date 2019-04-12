@@ -1,44 +1,40 @@
 # cxf-soap-wsdlonly-to-json
 
-This is an example use-case where a webservice is required.
+This is an example use-case where a webservice is required to bridge legacy and modern systems, by way of using Fuse and AMQ7 to bridge them.
+
+![Use Case Flow](./puml/soap-2-json-amq.png)
+
 
 No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes.
 
-```xml
-        <route id="cxfRoute">
-            <from uri="cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&amp;dataFormat=RAW"/>
-            <setBody>
-                <xpath>//soap:Body/sim:NewOperation</xpath>
-            </setBody>
-            <log message="XML body is ${body}"/>
-            <marshal ref="xmljsonWithOptions" />
-            <convertBodyTo type="java.lang.String" />
-            <log message="Body to go to AMQ is ${body}"/>
-            <!-- send to AMQ here -->
-            <to uri="direct:sendToJms" />
-            <!-- construct a response to the WS Client -->
-            <setBody>
-                <simple>resource:classpath:static/response.xml</simple>
-            </setBody>
-            <setHeader headerName="Content-Type">
-                <constant>application/xml</constant>
-            </setHeader>
-            <log message="Body returned to WS-Client is ${body}"/>
-        </route>
+```java
+        from("cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&dataFormat=RAW").routeId("cxfRoute")
+                .setBody(ns.xpath("//soap:Body/sim:NewOperation"))
+                .log("XML body is ${body}")
+                .marshal(xmlJsonFormat)
+                .convertBodyTo(String.class)
+                .log("Body to go to AMQ is ${body}")
+                .to("direct:sendToJms")
+                .setBody(simple("resource:classpath:static/response.xml"))
+                .setHeader("Content-Type", constant("application/xml"))
+                .log("Body returned to WS-Client is ${body}");
 
-        <route id="jmsSend">
-            <from uri="direct:sendToJms"/>
-            <setExchangePattern pattern="InOnly" />
-            <removeHeaders pattern="*" excludePattern="breadcrumbId" />
-            <to uri="jms:queue:hello" />
-        </route>
+        from("direct:sendToJms").routeId("jmsSend")
+                .setExchangePattern(ExchangePattern.InOnly)
+                .removeHeaders("*", "breadcrumbId")
+                .to("jms:queue:hello");
 ```
+
+## Load testing the application
+
+Siege can be used to load test and send many SOAP payloads to the application.  In order to do so, run the following:
 
 ```text
 mvn clean spring-boot:run
 siege --rc=.siegerc
 ```
 
+Change the configuration in the `.siegerc` file.
 
 
 ## Further Documentation
