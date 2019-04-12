@@ -25,6 +25,50 @@ No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes
                 .to("jms:queue:hello");
 ```
 
+## Running the application
+
+```text
+mvn clean package spring-boot:run
+```
+
+
+## Input and Output
+
+SOAP request in:
+
+```xml
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sim="http://www.example.org/SimpleService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <sim:NewOperation>
+            <FirstName>Camel</FirstName>
+            <LastName>Fuse</LastName>
+            <Other>LUSH</Other>
+        </sim:NewOperation>
+    </soapenv:Body>
+</soapenv:Envelope>
+```
+
+AMQ JSON out (will be in the queue `hello.queue`)
+
+```json
+{"FirstName":"Camel","LastName":"Fuse","Other":"LUSH"}
+```
+
+SOAP response received by web service client:
+
+```xml
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sim="http://www.example.org/SimpleService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <sim:NewOperationResponse>
+            <out>OK</out>
+        </sim:NewOperationResponse>
+    </soapenv:Body>
+</soapenv:Envelope>
+```
+
+
 ## Load testing the application
 
 Siege can be used to load test and send many SOAP payloads to the application.  In order to do so, run the following:
