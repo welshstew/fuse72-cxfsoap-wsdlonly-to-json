@@ -55,6 +55,10 @@ AMQ JSON out (will be in the queue `hello.queue`)
 {"FirstName":"Camel","LastName":"Fuse","Other":"LUSH"}
 ```
 
+And this should be seen in the AMQ management console:
+
+![AMQ Management Console](./img/artemis-console-json-message.png)
+
 SOAP response received by web service client:
 
 ```xml
