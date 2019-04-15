@@ -37,9 +37,5 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
                 .removeHeaders("*", "breadcrumbId")
                 .to("{{artemis.destination}}");
 
-//        from("{{artemis.destination}}").to("log:hello?showAll=true");
-
-        //TODO: make the jms destination configurable via properties
-
     }
 }
