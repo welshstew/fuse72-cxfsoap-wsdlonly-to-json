@@ -91,7 +91,7 @@ Change the configuration in the `.siegerc` file.
 
 There are multiple types of JMS libraries in the application, why?
 
-- AMQ7 artemis client libraries in the main application: org.apache.activemq/artemis-spring-integration/2.4.0
+- AMQ7 artemis client libraries in the main application: org.messaginghub/pooled-jms/${pooled.jms.version} and org.apache.qpid/qpid-jms-client/${qpid.jms.client.version}
 - AMQ5.x libraries in the unit test (broker and client): SoapToJsonUnitTest.java uses org.apache.activemq/activemq-broker/5.11.0.redhat-630371
 
 The unit test spins up an in-memory broker and overrides the client jms configuration in order to use that embedded in-memory broker.
