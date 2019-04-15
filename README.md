@@ -4,7 +4,6 @@ This is an example use-case where a webservice is required to bridge legacy and 
 
 ![Use Case Flow](./puml/soap-2-json-amq.png)
 
-
 No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes.
 
 ```java
@@ -26,6 +25,8 @@ No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes
 ```
 
 ## Running the application
+
+A prerequisite is having the [AMQ Broker 7.2 installed and running](https://developers.redhat.com/products/amq/download/), ensure it is configured, and the application is configured via the `application.properties` and run:
 
 ```text
 mvn clean package spring-boot:run
@@ -84,6 +85,21 @@ siege --rc=.siegerc
 
 Change the configuration in the `.siegerc` file.
 
+## Points of Note
+
+### JMS
+
+There are multiple types of JMS libraries in the application, why?
+
+- AMQ7 artemis client libraries in the main application: org.apache.activemq/artemis-spring-integration/2.4.0
+- AMQ5.x libraries in the unit test (broker and client): SoapToJsonUnitTest.java uses org.apache.activemq/activemq-broker/5.11.0.redhat-630371
+
+The unit test spins up an in-memory broker and overrides the client jms configuration in order to use that embedded in-memory broker.
+
+
+### Unit Testing with RestTemplate
+
+SOAP testing
 
 ## Further Documentation
 
