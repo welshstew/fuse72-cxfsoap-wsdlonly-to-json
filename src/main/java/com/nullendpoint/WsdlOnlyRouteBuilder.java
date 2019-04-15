@@ -35,9 +35,9 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
         from("direct:sendToJms").routeId("jmsSend")
                 .setExchangePattern(ExchangePattern.InOnly)
                 .removeHeaders("*", "breadcrumbId")
-                .to("jms:queue:hello");
+                .to("jms:{{queue.name}}");
 
-        //TODO: make the jms destination configurable via properties
+        //TODO: make the jms destination configurable via properties -- 
 
     }
 }
