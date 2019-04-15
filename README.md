@@ -99,10 +99,23 @@ The unit test spins up an in-memory broker and overrides the client jms configur
 
 ### Unit Testing with RestTemplate
 
-SOAP testing
+SOAP testing.  Effectively a SOAP client is a HTTP Post with a specific SOAPAction header.  The Unit Test test the service as that also.
+
+```java
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_XML);
+    headers.set("SOAPAction", "http://www.example.org/SimpleService/NewOperation");
+
+    HttpEntity<String> entity = new HttpEntity<String>(soapRequest, headers);
+    //HttpEntity
+    ResponseEntity<String> response = restTemplate.postForEntity("/services/SomeService", entity, String.class);
+
+```
 
 ## Further Documentation
 
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/html/deploying_into_spring_boot/index
+- https://access.redhat.com/documentation/en-us/red_hat_amq/7.2/html-single/using_the_amq_jms_pool_library
 

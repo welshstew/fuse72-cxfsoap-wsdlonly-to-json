@@ -15,15 +15,16 @@
  */
 package com.nullendpoint;
 
-import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
-import org.apache.camel.Endpoint;
 import org.apache.camel.component.jms.JmsComponent;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
 
-import java.util.HashMap;
+import org.apache.qpid.jms.JmsConnectionFactory;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.context.annotation.Primary;
+
+import javax.jms.ConnectionFactory;
 
 /**
  * The Spring-boot main class.
@@ -37,14 +38,25 @@ public class Application {
     }
 
     @Bean
-    ActiveMQJMSConnectionFactory artemisConnectionFactory(ArtemisJmsConfiguration config){
-        return new ActiveMQJMSConnectionFactory(config.getUrl(), config.getUsername(), config.getPassword());
+    ConnectionFactory jmsConnectionFactory(ArtemisJmsConfiguration config){
+        ConnectionFactory factory = new JmsConnectionFactory( config.getUsername(), config.getPassword(), config.getUrl());
+        return factory;
     }
 
     @Bean
-    JmsComponent jms(ActiveMQJMSConnectionFactory artemisConnectionFactory){
+    @Primary
+    JmsPoolConnectionFactory jmsPoolConnectionFactory(ArtemisJmsConfiguration config, ConnectionFactory jmsConnectionFactory){
+        JmsPoolConnectionFactory pool = new JmsPoolConnectionFactory();
+        pool.setConnectionFactory(jmsConnectionFactory);
+        pool.setUseAnonymousProducers(config.isUseAnonymousProducers());
+        pool.setMaxConnections(config.getMaxConnections());
+        return pool;
+    }
+
+    @Bean
+    JmsComponent jms(JmsPoolConnectionFactory jmsPoolConnectionFactory){
         JmsComponent jmsComponent = new JmsComponent();
-        jmsComponent.setConnectionFactory(artemisConnectionFactory);
+        jmsComponent.setConnectionFactory(jmsPoolConnectionFactory);
         return jmsComponent;
     }
 
