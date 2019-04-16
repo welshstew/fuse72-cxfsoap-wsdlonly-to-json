@@ -109,16 +109,21 @@ SOAP response received by web service client:
 
 To unit test the application locally, an embedded broker is created. To unit test, run the following:
 
+```text
 mvn clean test -Denvironment=local
+```
 
 To run integration tests connecting to the live AMQ Broker:
-1. change the artemis.url value in the yaml file src/test/resources/application-{environment}.yml
+1. change the artemis.url value in the yaml file:
+src/test/resources/application-{environment}.yml
 
 NOTE: if the yaml file for the required environment that is running AMQ does not exist, please create it.
 
 2. run:
 
+```text
 mvn clean verify -Denvironment={environment}
+```
 
 ## Load testing the application
 
