@@ -11,13 +11,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
 import org.xml.sax.SAXException;
@@ -35,12 +41,16 @@ import java.nio.file.Files;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource("classpath:application-${environment}.properties")
+@ActiveProfiles("${environment}")
 public class SoapToJsonUnitTest {
 	
-	@Configuration 
+	//@Profile("${environment}")
+	@Configuration
     @Import(Application.class) // override the ems configuration with local // activemq "vm://" for unit testing 
 	public static class TestConfig {
-	    @Bean
+		@Profile("local")
+		@Bean
 	    JmsComponent jms(){
 	    	ActiveMQConnectionFactory fac = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
 	        JmsComponent jmsComponent = new JmsComponent();
@@ -65,11 +75,11 @@ public class SoapToJsonUnitTest {
 
     @Before
     public void addJmsToMockRoute() throws Exception {
-
+    	
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("jms:queue:hello").to("mock:someMock");
+                from("jms:{{queue.name}}").to("mock:someMock");
             }
         });
         
