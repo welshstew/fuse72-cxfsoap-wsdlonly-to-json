@@ -41,8 +41,8 @@ import java.nio.file.Files;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource("classpath:application-${environment}.properties")
 @ActiveProfiles("${environment}")
+@TestPropertySource("classpath:application-${environment}.yml")
 public class SoapToJsonUnitTest {
 	
 	//@Profile("${environment}")
@@ -76,7 +76,7 @@ public class SoapToJsonUnitTest {
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("jms:{{queue.name}}").to("mock:someMock");
+                from("{{artemis.destination}}").to("mock:someMock");
             }
         });
         
