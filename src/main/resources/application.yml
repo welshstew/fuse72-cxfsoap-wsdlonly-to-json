@@ -12,6 +12,12 @@ endpoints:
   health:
     enabled: true
 
+camel:
+  springboot:
+    xml-rests: false
+    xml-routes: false
+    name: Soap2Json2AmqContext
+
 artemis:
   url: amqps://localhost:5671?transport.trustStoreLocation=/home/swinches/AppServers/examplebroker/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
   username: theuser
