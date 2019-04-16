@@ -35,7 +35,7 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
     @Value("${cxf.webservice.wsdlUrl}")
     private String webserviceWsdlUrl;
 
-    //xpath to
+    //xpath to content that is required to be extracted to JSON
     @Value("${cxf.webservice.xpath}")
     private String webserviceXpath;
 

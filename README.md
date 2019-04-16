@@ -4,25 +4,57 @@ This is an example use-case where a webservice is required to bridge legacy and 
 
 ![Use Case Flow](./puml/soap-2-json-amq.png)
 
-No JAXB Marshalling, just plain soap body to json.  All in two neat camel routes.
+No JAXB Marshalling, just a plain SOAP body to JSON.  All in two neat camel routes.
 
 ```java
-        from("cxf://SomeService?wsdlURL=wsdl/simpleService.wsdl&dataFormat=RAW").routeId("cxfRoute")
-                .setBody(ns.xpath("//soap:Body/sim:NewOperation"))
+        from("cxf://" + webserviceName + "?wsdlURL=" + webserviceWsdlUrl + "&dataFormat=RAW&serviceName=" + webserviceServiceName + "&endpointName=" + webserviceEndpointName).routeId("cxfRoute")
+                .setBody(ns.xpath(webserviceXpath))
                 .log("XML body is ${body}")
                 .marshal(xmlJsonFormat)
                 .convertBodyTo(String.class)
                 .log("Body to go to AMQ is ${body}")
                 .to("direct:sendToJms")
-                .setBody(simple("resource:classpath:static/response.xml"))
+                .setBody(simple(webserviceSimpleResponse))
                 .setHeader("Content-Type", constant("application/xml"))
                 .log("Body returned to WS-Client is ${body}");
 
         from("direct:sendToJms").routeId("jmsSend")
                 .setExchangePattern(ExchangePattern.InOnly)
                 .removeHeaders("*", "breadcrumbId")
-                .to("jms:queue:hello");
+                .to("{{artemis.destination}}");
 ```
+
+This application can be configured to any WSDL.  It uses the [camel-xmljson dataformat](http://camel.apache.org/xmljson.html) in order to marshall xml to json.
+
+## Application Configuration (application.yml)
+
+The artemis section configures the connection to the JBoss AMQ7 broker, `destination` being the queue where the json will to sent to.
+
+The cxf section configures the webservice, the wsdl exists in this project for simplicity, however, it can exist outside and referenced via `file://some/file/location/wsdl/simpleService.wsdl`.  
+`serviceName`, and `endpointName` need to be specified as per the [camel-cxf component documentation](https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc)
+
+```yaml
+artemis:
+  url: amqp://192.168.122.18:61616
+  username: admin
+  password: admin
+  destination: jms:queue:hello
+  useAnonymousProducers: false
+  maxConnections: 5
+
+cxf:
+  webservice:
+    name: SomeService
+    serviceName: "{http://www.example.org/SimpleService/}SimpleService"
+    endpointName: "{http://www.example.org/SimpleService/}SimpleServiceSOAP"
+    wsdlUrl: "wsdl/simpleService.wsdl"
+    namespaces:
+          soap: "http://schemas.xmlsoap.org/soap/envelope/"
+          sim: "http://www.example.org/SimpleService/"
+    xpath: "//soap:Body/sim:NewOperation"
+    simpleResponse: "resource:classpath:static/response.xml"
+```
+
 
 ## Running the application
 
@@ -118,4 +150,5 @@ SOAP testing.  Effectively a SOAP client is a HTTP Post with a specific SOAPActi
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/html/deploying_into_spring_boot/index
 - https://access.redhat.com/documentation/en-us/red_hat_amq/7.2/html-single/using_the_amq_jms_pool_library
-
+- https://camel.apache.org/cxf.html
+- https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc

@@ -27,7 +27,7 @@ cxf:
     endpointName: "{http://www.example.org/SimpleService/}SimpleServiceSOAP"
     wsdlUrl: "wsdl/simpleService.wsdl"
     namespaces:
-          soap: "http://schemas.xmlsoap.org/soap/envelope/"
-          sim: "http://www.example.org/SimpleService/"
+      soap: "http://schemas.xmlsoap.org/soap/envelope/"
+      sim: "http://www.example.org/SimpleService/"
     xpath: "//soap:Body/sim:NewOperation"
     simpleResponse: "resource:classpath:static/response.xml"
