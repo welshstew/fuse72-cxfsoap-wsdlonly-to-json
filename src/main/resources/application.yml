@@ -13,9 +13,9 @@ endpoints:
     enabled: true
 
 artemis:
-  url: amqp://192.168.122.18:61616
-  username: admin
-  password: admin
+  url: amqps://localhost:5671?transport.trustStoreLocation=/home/swinches/AppServers/examplebroker/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
+  username: theuser
+  password: Thepassword1!
   destination: jms:queue:hello
   useAnonymousProducers: false
   maxConnections: 5

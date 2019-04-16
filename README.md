@@ -145,6 +145,60 @@ SOAP testing.  Effectively a SOAP client is a HTTP Post with a specific SOAPActi
 
 ```
 
+## Setting up the AMQ7 Broker.
+
+- Download from Jboss Portal
+- Follow the install documentation :)
+
+### Generating keystores and truststores with OpenSSL and keytool
+ 
+ ```text
+ # Create a broker key and cert - import the keypair and cert into the broker keystore
+ openssl req -newkey rsa:2048 -nodes -keyout broker_keypair.pem -x509 -days 65000 -out broker_cert.pem
+ openssl pkcs12 -inkey broker_keypair.pem -in broker_cert.pem -export -out broker_ks.p12
+ 
+ # Create a client key and cert - import the keypair and cert into the client keystore
+ openssl req -newkey rsa:2048 -nodes -keyout client_keypair.pem -x509 -days 65000 -out client_cert.pem
+ openssl pkcs12 -inkey client_keypair.pem -in client_cert.pem -export -out client_ks.p12
+ 
+ # Create a truststore for the broker, and import the client's certificate. This establishes that the broker "trusts" the client:
+ keytool -import -alias client -keystore broker_ts.p12 -file client_cert.pem -deststoretype pkcs12
+ 
+ # Create a truststore for the client, and import the broker's certificate. This establishes that the client "trusts" the broker:
+ keytool -import -alias broker -keystore client_ts.p12 -file broker_cert.pem -deststoretype pkcs12
+```
+
+The above keystores and truststores were created and given the password `password`
+
+
+### Configure the broker.xml acceptor
+
+The `broker_ks.p12` and `broker_ts.p12` files should reside in the `$BROKER_HOME/etc` directory.
+
+```xml
+<!-- AMQPS Acceptor.  Listens on default AMQPS port for AMQPS traffic.-->
+<acceptor name="amqp-ssl">tcp://0.0.0.0:5671?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;useEpoll=true;amqpCredits=1000;amqpMinCredits=300;connectionsAllowed=1000;sslEnabled=true;keyStorePath=broker_ks.p12;keyStorePassword=password;trustStorePath=broker_ts.p12;trustStorePassword=password</acceptor>
+```
+
+### Configure the client
+
+The url by which the client connects needs to have the path to the trustStore, example below:
+
+```yaml
+artemis:
+  url: amqps://localhost:5671?transport.trustStoreLocation=/home/user/AppServers/examplebroker/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
+  username: theuser
+  password: Thepassword1!
+```
+
+Once both broker and client are configured correctly, and the application is running against the broker, then the client log should display the following:
+
+```text
+2019-04-16 12:31:54.624  INFO 19120 --- [0.0-8080-exec-1] cxfRoute                                 : Body to go to AMQ is {"FirstName":"Camel","LastName":"Fuse","Other":"asdasdasdasdasd"}
+2019-04-16 12:31:55.792  INFO 19120 --- [localhost:5671]] o.a.qpid.jms.sasl.SaslMechanismFinder    : Best match for SASL auth was: SASL-PLAIN
+2019-04-16 12:31:55.850  INFO 19120 --- [localhost:5671]] org.apache.qpid.jms.JmsConnection        : Connection ID:5ed21a51-0b0e-44b2-b89f-2c7a9d99c126:1 connected to remote Broker: amqps://localhost:5671
+```
+
 ## Further Documentation
 
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/
