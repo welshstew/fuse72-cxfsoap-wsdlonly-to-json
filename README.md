@@ -152,3 +152,4 @@ SOAP testing.  Effectively a SOAP client is a HTTP Post with a specific SOAPActi
 - https://access.redhat.com/documentation/en-us/red_hat_amq/7.2/html-single/using_the_amq_jms_pool_library
 - https://camel.apache.org/cxf.html
 - https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc
+- [Red Hat Jboss AMQ Supported configurations](https://access.redhat.com/articles/2791941)
