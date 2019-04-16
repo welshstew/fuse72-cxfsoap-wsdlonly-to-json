@@ -20,6 +20,9 @@ public class ArtemisJmsConfiguration {
      */
     private String password;
 
+    private boolean useAnonymousProducers = false;
+    private Integer maxConnections = 5;
+
     public ArtemisJmsConfiguration() {
     }
 
@@ -47,4 +50,19 @@ public class ArtemisJmsConfiguration {
         this.password = password;
     }
 
+    public boolean isUseAnonymousProducers() {
+        return useAnonymousProducers;
+    }
+
+    public void setUseAnonymousProducers(boolean useAnonymousProducers) {
+        this.useAnonymousProducers = useAnonymousProducers;
+    }
+
+    public Integer getMaxConnections() {
+        return maxConnections;
+    }
+
+    public void setMaxConnections(Integer maxConnections) {
+        this.maxConnections = maxConnections;
+    }
 }

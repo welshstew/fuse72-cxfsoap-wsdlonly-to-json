@@ -1,0 +1,33 @@
+# lets listen on all ports to ensure we can be invoked from the pod IP
+server:
+  address: 0.0.0.0
+
+management:
+  address: 0.0.0.0
+  port: 8081
+
+# disable all management endpoints except health
+endpoints:
+  enabled: false
+  health:
+    enabled: true
+
+artemis:
+  url: amqps://localhost:5671?transport.trustStoreLocation=/home/swinches/AppServers/examplebroker/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
+  username: theuser
+  password: Thepassword1!
+  destination: jms:queue:hello
+  useAnonymousProducers: false
+  maxConnections: 5
+
+cxf:
+  webservice:
+    name: SomeService
+    serviceName: "{http://www.example.org/SimpleService/}SimpleService"
+    endpointName: "{http://www.example.org/SimpleService/}SimpleServiceSOAP"
+    wsdlUrl: "wsdl/simpleService.wsdl"
+    namespaces:
+      soap: "http://schemas.xmlsoap.org/soap/envelope/"
+      sim: "http://www.example.org/SimpleService/"
+    xpath: "//soap:Body/sim:NewOperation"
+    simpleResponse: "resource:classpath:static/response.xml"

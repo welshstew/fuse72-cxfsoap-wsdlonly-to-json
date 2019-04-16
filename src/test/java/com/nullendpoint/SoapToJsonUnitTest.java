@@ -70,9 +70,6 @@ public class SoapToJsonUnitTest {
     @Autowired
     ApplicationContext applicationContext;
 
-    //TODO: There is no activemq (java amq6) context, add one programmatically
-    //TODO: add the test application.properties to point to this activemq (vm://localhost)
-
     @Before
     public void addJmsToMockRoute() throws Exception {
     	
@@ -97,14 +94,12 @@ public class SoapToJsonUnitTest {
         headers.setContentType(MediaType.APPLICATION_XML);
         headers.set("SOAPAction", "http://www.example.org/SimpleService/NewOperation");
 
-        //TODO: Load the SOAP request content from file instead of this
         File file;
         String soapRequest = null;
 		try {
 			file = ResourceUtils.getFile("classpath:soap-request.xml");
 			soapRequest = new String(Files.readAllBytes(file.toPath()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -115,7 +110,6 @@ public class SoapToJsonUnitTest {
 			file = ResourceUtils.getFile("classpath:expected-soap-response.xml");
 			soapReponse = new String(Files.readAllBytes(file.toPath()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}        
         
@@ -129,18 +123,17 @@ public class SoapToJsonUnitTest {
         
 		System.out.println("Test SOAP Response:\n " + soapReponse);
         
-        //TODO: compare soap response and expected soap response with XMLUnit
+        //compare soap response and expected soap response with XMLUnit
         Diff diff = DiffBuilder.compare(soapReponse).withTest(responseString).ignoreComments().ignoreWhitespace().checkForSimilar().build();
         assertThat(diff.hasDifferences()==false);
 	
        
-        //TODO: compare json content matches using Gson
+        //compare json content matches using Gson
         String expectedJsonContext = null;
 		try {
-			file = ResourceUtils.getFile("classpath:expected-json-context.json");
+			file = ResourceUtils.getFile("classpath:expected-json-content.json");
 			expectedJsonContext = new String(Files.readAllBytes(file.toPath()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -156,11 +149,5 @@ public class SoapToJsonUnitTest {
         
         mockEndpoint.assertIsSatisfied();
     }
-/*    
-    @After
-    public void shutDownBroker() throws Exception {
-        broker.stop();
-    }*/
-
 
 }
