@@ -105,6 +105,20 @@ SOAP response received by web service client:
 </soapenv:Envelope>
 ```
 
+## Unit testing and integration testing
+
+To unit test the application locally, an embedded broker is created. To unit test, run the following:
+
+mvn clean test -Denvironment=local
+
+To run integration tests connecting to the live AMQ Broker:
+1. change the artemis.url value in the yaml file src/test/resources/application-{environment}.yml
+
+NOTE: if the yaml file for the required environment that is running AMQ does not exist, please create it.
+
+2. run:
+
+mvn clean verify -Denvironment={environment}
 
 ## Load testing the application
 
