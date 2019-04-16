@@ -12,6 +12,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    
+    <skip.unit.tests>false</skip.unit.tests>
+    <skip.integration.tests>true</skip.integration.tests>
 
     <!-- configure the versions you want to use here -->
     <fuse.version>7.2.0.fuse-720020-redhat-00001</fuse.version>
@@ -148,6 +151,12 @@
 
   <build>
     <defaultGoal>spring-boot:run</defaultGoal>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+        </resource>
+    </resources>
 
     <plugins>
       <plugin>
@@ -158,7 +167,7 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-      <plugin>
+<!--       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven-surefire-plugin.version}</version>
@@ -168,8 +177,7 @@
             <exclude>**/*KT.java</exclude>
           </excludes>
         </configuration>
-      </plugin>
-
+      </plugin> -->
       <plugin>
         <groupId>org.jboss.redhat-fuse</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -182,10 +190,86 @@
           </execution>
         </executions>
       </plugin>
+      
+      <!-- display active profile in compile phase -->
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-help-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+              <execution>
+                  <id>show-profiles</id>
+                  <phase>compile</phase>
+                  <goals>
+                      <goal>active-profiles</goal>
+                  </goals>
+              </execution>
+          </executions>
+      </plugin>
     </plugins>
   </build>
 
   <profiles>
+	<profile>
+        <id>local</id>
+        <build>
+		    <plugins>
+		      <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-surefire-plugin</artifactId>
+		        <version>${maven-surefire-plugin.version}</version>
+		        <configuration>
+		          <systemProperties>
+		            <property>
+		              <name>environment</name>
+		              <value>local</value>
+		            </property>
+		          </systemProperties>
+		        </configuration>
+		      </plugin>
+		    </plugins>
+		</build>
+        <properties>
+			<spring.profiles.active>local</spring.profiles.active>
+			<environment>local</environment>
+   		</properties>
+		<activation>
+			<activeByDefault>true</activeByDefault>
+            <property>
+                <name>environment</name>
+                <value>local</value>
+            </property>
+        </activation>
+    </profile>
+	<profile>
+        <id>dev</id>
+        <build>
+		    <plugins>
+		      <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-surefire-plugin</artifactId>
+		        <version>${maven-surefire-plugin.version}</version>
+		        <configuration>
+		          <systemProperties>
+		            <property>
+		              <name>environment</name>
+		              <value>dev</value>
+		            </property>
+		          </systemProperties>
+		        </configuration>
+		      </plugin>
+		    </plugins>
+		</build>
+        <properties>
+	        <spring.profiles.active>dev</spring.profiles.active>
+   		</properties>
+		<activation>
+            <property>
+                <name>environment</name>
+                <value>dev</value>
+            </property>
+        </activation>
+    </profile>
     <profile>
       <id>fabric8</id>
       <build>
