@@ -222,7 +222,7 @@ Once both broker and client are configured correctly, and the application is run
 
 ### SSL
 
-First we need to create the necessary keystores and certificates and truststores, please note:
+1. We need to create the necessary keystores and certificates and truststores, please note:
 
 It is recommended to use the PKCS12 format which is an industry standard format.
 
@@ -255,7 +255,7 @@ So now we have:
 NOTE: Save the chosen keystore/truststore passwords
 
 
-To secure the webservice, we need to enable ssl. This can be done via configurations on the application (application.properties/application.yml). Please see the following extract of application.yml:
+2. To secure the webservice, we need to enable ssl. This can be done via configurations on the application (application.properties/application.yml). Please see the following extract of application.yml:
 
 ```text
 server:
@@ -271,6 +271,25 @@ server:
 security:
   require-ssl: true
 ```
+
+3. To ensure Maven does not corrupt/filter characters in the keystore, add the following to the pom:
+
+<resources>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <excludes>
+            <exclude>**/*.p12</exclude>
+        </excludes>
+    </resource>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/*.p12</include>
+        </includes>
+    </resource>
+</resources>
 
 Test this setup using SOAP-UI or your preferred client.
 How to set keystores/truststores for a SOAP-UI project:
