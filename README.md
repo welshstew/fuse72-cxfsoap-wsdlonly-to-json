@@ -218,6 +218,8 @@ Once both broker and client are configured correctly, and the application is run
 2019-04-16 12:31:55.850  INFO 19120 --- [localhost:5671]] org.apache.qpid.jms.JmsConnection        : Connection ID:5ed21a51-0b0e-44b2-b89f-2c7a9d99c126:1 connected to remote Broker: amqps://localhost:5671
 ```
 
+## Setting up Webserver security
+
 ### SSL
 
 To secure the webservice, we need to enable ssl. This can be done via configurations on the application. Please see the following extract of application.yml:
