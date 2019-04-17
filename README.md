@@ -222,21 +222,7 @@ Once both broker and client are configured correctly, and the application is run
 
 ### SSL
 
-To secure the webservice, we need to enable ssl. This can be done via configurations on the application. Please see the following extract of application.yml:
-
-```text
-server:
-  address: 0.0.0.0
-  ssl:
-    key-store: classpath:certs/service_ks.p12
-    key-store-type: pkcs12
-    key-store-password: redhat
-    key-alias: service
-security:
-  require-ssl: true
-```
-
-To create the necessary keystore and certificates , please note:
+First we need to create the necessary keystores and certificates and truststores, please note:
 
 It is recommended to use the PKCS12 format which is an industry standard format.
 
@@ -259,8 +245,37 @@ keytool -import -alias client -keystore service_ts.p12 -file client_cert.pem -de
 
 keytool -import -alias service -keystore client_ts.p12 -file service_cert.pem -deststoretype pkcs12
 ```
+
+So now we have:
+- Service key and certificate imported in the service keystore
+- Client key and certificate imported in the client keystore
+- Service truststore with the client certificate imported
+- Client truststore with the service certificate imported
          
-NOTE: Save the chosen keystore password
+NOTE: Save the chosen keystore/truststore passwords
+
+
+To secure the webservice, we need to enable ssl. This can be done via configurations on the application (application.properties/application.yml). Please see the following extract of application.yml:
+
+```text
+server:
+  address: 0.0.0.0
+  ssl:
+    key-store: classpath:security/service_ks.p12
+    key-store-type: pkcs12
+    key-store-password: redhat
+    key-alias: service
+    clientAuth: need
+    trust-store: classpath:security/service_ts.p12
+    trust-store-password: redhat
+security:
+  require-ssl: true
+```
+
+Test this setup using SOAP-UI or your preferred client.
+How to set keystores/truststores for a SOAP-UI project:
+https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
+
   
 
 ## Further Documentation
@@ -270,4 +285,5 @@ NOTE: Save the chosen keystore password
 - https://access.redhat.com/documentation/en-us/red_hat_amq/7.2/html-single/using_the_amq_jms_pool_library
 - https://camel.apache.org/cxf.html
 - https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc
+- https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
 - [Red Hat Jboss AMQ Supported configurations](https://access.redhat.com/articles/2791941)
