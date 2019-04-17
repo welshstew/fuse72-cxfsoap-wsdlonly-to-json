@@ -238,18 +238,17 @@ security:
 
 To create the necessary keystore and certificates , please note:
 
-        - It is recommended to use the PKCS12 format which is an industry standard format.
+It is recommended to use the PKCS12 format which is an industry standard format.
+
 ```text        
 # Create a service key and cert - import the keypair and cert into the service keystore
 
 openssl req -newkey rsa:2048 -nodes -keyout service_keypair.pem -x509 -days 65000 -out service_cert.pem
-
 openssl pkcs12 -name service -inkey service_keypair.pem -in service_cert.pem -export -out service_ks.p12
 
 # Create a client key and cert - import the keypair and cert into the client keystore
 
 openssl req -newkey rsa:2048 -nodes -keyout client_keypair.pem -x509 -days 65000 -out client_cert.pem
-
 openssl pkcs12 -name client -inkey client_keypair.pem -in client_cert.pem -export -out client_ks.p12
 
 # Create a truststore for the service, and import the client's certificate. This establishes that the service "trusts" the client:
