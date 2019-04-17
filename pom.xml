@@ -138,29 +138,6 @@
       <version>2.8.5.redhat-00001</version>
       <scope>test</scope>
     </dependency>
-    
-    <dependency> 
-	   <groupId>org.springframework.security</groupId>
-	   <artifactId>spring-security-config</artifactId>
-	   <version>3.2.5.RELEASE</version>
-	</dependency>
-	
-	<dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-        <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-transports-http</artifactId>
-        <version>${cxf.version}</version>
-    </dependency>
-        <!-- Jetty is needed if you're are not using the CXFServlet -->
-    <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-transports-http-jetty</artifactId>
-        <version>${cxf.version}</version>
-    </dependency>
 
   </dependencies>
 
