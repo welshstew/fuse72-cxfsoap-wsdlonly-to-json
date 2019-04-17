@@ -228,23 +228,38 @@ To secure the webservice, we need to enable ssl. This can be done via configurat
 server:
   address: 0.0.0.0
   ssl:
-    key-store: classpath:certs/baeldung.p12
+    key-store: classpath:certs/service_ks.p12
     key-store-type: pkcs12
-    key-store-password: baeldung
-    key-alias: baeldung
+    key-store-password: redhat
+    key-alias: service
 security:
   require-ssl: true
 ```
 
-To create the necessary keystore, please note:
+To create the necessary keystore and certificates , please note:
 
-        - It is recommended to use the PKCS12 format which is an industry standard format. We can use the following command to generate our PKCS12 keystore format:
-        
-        keytool -genkeypair -alias {alias} -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore {keystore_name}.p12 -validity 3650
-        
-        - If there is an existing keystore in JKS format, please use the following command to convert to PKCS12
-        
-         keytool -importkeystore -srckeystore {old_keystore_name}.jks -destkeystore {new_keystore_name}.p12 -deststoretype pkcs12
+        - It is recommended to use the PKCS12 format which is an industry standard format.
+```text        
+# Create a service key and cert - import the keypair and cert into the service keystore
+
+openssl req -newkey rsa:2048 -nodes -keyout service_keypair.pem -x509 -days 65000 -out service_cert.pem
+
+openssl pkcs12 -name service -inkey service_keypair.pem -in service_cert.pem -export -out service_ks.p12
+
+# Create a client key and cert - import the keypair and cert into the client keystore
+
+openssl req -newkey rsa:2048 -nodes -keyout client_keypair.pem -x509 -days 65000 -out client_cert.pem
+
+openssl pkcs12 -name client -inkey client_keypair.pem -in client_cert.pem -export -out client_ks.p12
+
+# Create a truststore for the service, and import the client's certificate. This establishes that the service "trusts" the client:
+
+keytool -import -alias client -keystore service_ts.p12 -file client_cert.pem -deststoretype pkcs12
+
+# Create a truststore for the client, and import the service's certificate. This establishes that the client "trusts" the service:
+
+keytool -import -alias service -keystore client_ts.p12 -file service_cert.pem -deststoretype pkcs12
+```
          
 NOTE: Save the chosen keystore password
   
