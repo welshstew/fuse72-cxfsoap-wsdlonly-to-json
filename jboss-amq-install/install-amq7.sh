@@ -3,6 +3,16 @@
 # Bash script to install amq7, assuming it is downloaded to /tmp directory, currently expecting: /tmp/amq-broker-7.2.4-bin.zip
 #
 
+AMQ_USER=admin
+AMQ_PASSWORD=admin
+QUEUES="hello,hello1,hello2,hello3"
+DOWNLOADED_AMQ7_BROKER=/tmp/amq-broker-7.2.4-bin.zip
+AMQ_BASE=/opt/jboss/amq/
+AMQ_HOME=/opt/jboss/amq/amq-broker-7.2.4
+BROKER_NAME=mybroker
+BROKER_PATH=$AMQ_HOME/instances/$BROKER_NAME
+
+
 subscription-manager repos --enable rhel-7-server-rpms && subscription-manager repos --enable rhel-7-server-optional-rpms
 yum update -y
 yum install -y java-1.8.0-openjdk-devel
@@ -12,18 +22,16 @@ groupadd amq
 #create amq group
 useradd amq -g amq
 
-DOWNLOADED_AMQ7_BROKER=/tmp/amq-broker-7.2.4-bin.zip
-AMQ_BASE=/opt/jboss/amq/
 mkdir -p $AMQ_BASE
 unzip $DOWNLOADED_AMQ7_BROKER -d $AMQ_BASE
-AMQ_HOME=/opt/jboss/amq/amq-broker-7.2.4
+
 cd $AMQ_HOME
-./bin/artemis create mybroker --user admin --password admin --queues jms.queue.hello --require-login ./instances/mybroker
-chown amq:amq -R /opt/jboss/amq/
+./bin/artemis create $BROKER_NAME --user $AMQ_USER --password $AMQ_PASSWORD --queues $QUEUES --require-login $BROKER_PATH
+chown amq:amq -R $AMQ_BASE
 
 #configure access
-sed -i 's/localhost/0.0.0.0/g' /opt/jboss/amq/amq-broker-7.2.4/instances/mybroker/etc/bootstrap.xml
-sed -i 's/localhost/*/g' /opt/jboss/amq/amq-broker-7.2.4/instances/mybroker/etc/jolokia-access.xml
+sed -i 's/localhost/0.0.0.0/g' $BROKER_PATH/etc/bootstrap.xml
+sed -i 's/localhost/*/g' $BROKER_PATH/etc/jolokia-access.xml
 
 # configure firewall
 # acceptors
@@ -45,8 +53,8 @@ Description = JBoss Active MQ (AMQ)
 After = network.target
 
 [Service]
-ExecStart = /opt/jboss/amq/amq-broker-7.2.4/instances/mybroker/bin/artemis-service start
-ExecStop = /opt/jboss/amq/amq-broker-7.2.4/instances/mybroker/bin/artemis-service stop
+ExecStart = $BROKER_PATH/bin/artemis-service start
+ExecStop = $BROKER_PATH/bin/artemis-service stop
 Type=forking
 User = amq
 Group = amq
