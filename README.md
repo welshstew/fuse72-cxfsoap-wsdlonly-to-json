@@ -218,6 +218,85 @@ Once both broker and client are configured correctly, and the application is run
 2019-04-16 12:31:55.850  INFO 19120 --- [localhost:5671]] org.apache.qpid.jms.JmsConnection        : Connection ID:5ed21a51-0b0e-44b2-b89f-2c7a9d99c126:1 connected to remote Broker: amqps://localhost:5671
 ```
 
+## Setting up Webserver security
+
+### SSL
+
+1. We need to create the necessary keystores and certificates and truststores, please note:
+
+It is recommended to use the PKCS12 format which is an industry standard format.
+
+```text        
+# Create a service key and cert - import the keypair and cert into the service keystore
+
+openssl req -newkey rsa:2048 -nodes -keyout service_keypair.pem -x509 -days 65000 -out service_cert.pem
+openssl pkcs12 -name service -inkey service_keypair.pem -in service_cert.pem -export -out service_ks.p12
+
+# Create a client key and cert - import the keypair and cert into the client keystore
+
+openssl req -newkey rsa:2048 -nodes -keyout client_keypair.pem -x509 -days 65000 -out client_cert.pem
+openssl pkcs12 -name client -inkey client_keypair.pem -in client_cert.pem -export -out client_ks.p12
+
+# Create a truststore for the service, and import the client's certificate. This establishes that the service "trusts" the client:
+
+keytool -import -alias client -keystore service_ts.p12 -file client_cert.pem -deststoretype pkcs12
+
+# Create a truststore for the client, and import the service's certificate. This establishes that the client "trusts" the service:
+
+keytool -import -alias service -keystore client_ts.p12 -file service_cert.pem -deststoretype pkcs12
+```
+
+So now we have:
+- Service key and certificate imported in the service keystore
+- Client key and certificate imported in the client keystore
+- Service truststore with the client certificate imported
+- Client truststore with the service certificate imported
+         
+NOTE: Save the chosen keystore/truststore passwords
+
+
+2. To secure the webservice, we need to enable ssl. This can be done via configurations on the application (application.properties/application.yml). Please see the following extract of application.yml:
+
+```text
+server:
+  address: 0.0.0.0
+  ssl:
+    key-store: classpath:security/service_ks.p12
+    key-store-type: pkcs12
+    key-store-password: redhat
+    key-alias: service
+    clientAuth: need
+    trust-store: classpath:security/service_ts.p12
+    trust-store-password: redhat
+security:
+  require-ssl: true
+```
+
+3. To ensure Maven does not corrupt/filter characters in the keystore, add the following to the pom:
+
+<resources>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <excludes>
+            <exclude>**/*.p12</exclude>
+        </excludes>
+    </resource>
+    <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/*.p12</include>
+        </includes>
+    </resource>
+</resources>
+
+Test this setup using SOAP-UI or your preferred client.
+How to set keystores/truststores for a SOAP-UI project:
+https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
+
+  
+
 ## Further Documentation
 
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/
@@ -225,4 +304,5 @@ Once both broker and client are configured correctly, and the application is run
 - https://access.redhat.com/documentation/en-us/red_hat_amq/7.2/html-single/using_the_amq_jms_pool_library
 - https://camel.apache.org/cxf.html
 - https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc
+- https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
 - [Red Hat Jboss AMQ Supported configurations](https://access.redhat.com/articles/2791941)
