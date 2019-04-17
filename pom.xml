@@ -28,7 +28,6 @@
     <pooled.jms.version>1.0.4.redhat-00001</pooled.jms.version>
     <qpid.jms.client.version>0.40.0.redhat-00001</qpid.jms.client.version>
     <artemis.spring.integration.version>2.4.0</artemis.spring.integration.version>
-
   </properties>
 
   <dependencyManagement>
@@ -141,12 +140,24 @@
 
   <build>
     <defaultGoal>spring-boot:run</defaultGoal>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
+	<resources> 
+		<resource> 
+			<directory>src/main/resources</directory> 
+			<filtering>true</filtering> 
+			<excludes> 
+				<exclude>/.jks</exclude> 
+				<exclude>**/*.p12</exclude>
+			</excludes> 
+		</resource> 
+		<resource> 
+			<directory>src/main/resources</directory> 
+			<filtering>false</filtering> 
+			<includes> 
+				<include>/.jks</include>
+				<include>**/*.p12</include> 
+			</includes> 
+		</resource> 
+	</resources>
 
     <plugins>
       <plugin>
