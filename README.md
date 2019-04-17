@@ -272,6 +272,9 @@ security:
   require-ssl: true
 ```
 
+NOTE: Check other security options on:
+https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-configure-ssl
+
 3. To ensure Maven does not corrupt/filter characters in the keystore, add the following to the pom:
 
 <resources>
@@ -305,4 +308,6 @@ https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
 - https://camel.apache.org/cxf.html
 - https://github.com/apache/camel/blob/master/components/camel-cxf/src/main/docs/cxf-component.adoc
 - https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
+- https://www.baeldung.com/spring-boot-https-self-signed-certificate
+- https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-configure-ssl
 - [Red Hat Jboss AMQ Supported configurations](https://access.redhat.com/articles/2791941)
