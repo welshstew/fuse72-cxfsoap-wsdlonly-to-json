@@ -218,6 +218,35 @@ Once both broker and client are configured correctly, and the application is run
 2019-04-16 12:31:55.850  INFO 19120 --- [localhost:5671]] org.apache.qpid.jms.JmsConnection        : Connection ID:5ed21a51-0b0e-44b2-b89f-2c7a9d99c126:1 connected to remote Broker: amqps://localhost:5671
 ```
 
+### SSL
+
+To secure the webservice, we need to enable ssl. This can be done via configurations on the application. Please see the following extract of application.yml:
+
+```text
+server:
+  address: 0.0.0.0
+  ssl:
+    key-store: classpath:certs/baeldung.p12
+    key-store-type: pkcs12
+    key-store-password: baeldung
+    key-alias: baeldung
+security:
+  require-ssl: true
+```
+
+To create the necessary keystore, please note:
+
+        - It is recommended to use the PKCS12 format which is an industry standard format. We can use the following command to generate our PKCS12 keystore format:
+        
+        keytool -genkeypair -alias {alias} -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore {keystore_name}.p12 -validity 3650
+        
+        - If there is an existing keystore in JKS format, please use the following command to convert to PKCS12
+        
+         keytool -importkeystore -srckeystore {old_keystore_name}.jks -destkeystore {new_keystore_name}.p12 -deststoretype pkcs12
+         
+NOTE: Save the chosen keystore password
+  
+
 ## Further Documentation
 
 - https://access.redhat.com/documentation/en-us/red_hat_fuse/7.2/
