@@ -1,32 +1,38 @@
 package com.nullendpoint;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.Before;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ResourceUtils;
-import org.xml.sax.SAXException;
+import org.springframework.web.client.RestTemplate;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Diff;
 
@@ -38,12 +44,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLContext;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("${environment}")
 @TestPropertySource("classpath:application-${environment}.yml")
 public class SoapToJsonUnitTest {
+	
+	@Value("${security.require-ssl}")
+	private String requireSSL;
 	
 	//@Profile("${environment}")
 	@Configuration
@@ -62,9 +78,6 @@ public class SoapToJsonUnitTest {
 	//private static BrokerService broker = new BrokerService();
 
     @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
     private CamelContext camelContext;    
     
     @Autowired
@@ -81,9 +94,29 @@ public class SoapToJsonUnitTest {
         });
         
     }
-
+    
+    //RestTemplate that trusts certificates for https
+    @Bean
+    private RestTemplate getRestTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        TrustStrategy acceptingTrustStrategy = new TrustStrategy() {
+            @Override
+            public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                return true;
+            }
+        };
+        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setHttpClient(httpClient);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        return restTemplate;
+    }
+    
+    
     @Test
     public void sayHelloTest() throws InterruptedException {
+ 
 
         //Get the mock endpoint and set expectations
         MockEndpoint mockEndpoint = (MockEndpoint) camelContext.getEndpoint("mock://someMock");
@@ -104,7 +137,7 @@ public class SoapToJsonUnitTest {
 		}
 		
 		System.out.println("Test SOAP Request:\n " + soapRequest);
-		
+				
         String soapReponse = null;
 		try {
 			file = ResourceUtils.getFile("classpath:expected-soap-response.xml");
@@ -116,7 +149,21 @@ public class SoapToJsonUnitTest {
         HttpEntity<String> entity = new HttpEntity<String>(soapRequest, headers);
 
         //HttpEntity
-        ResponseEntity<String> response = restTemplate.postForEntity("/services/SomeService", entity, String.class);
+        RestTemplate restTemplate=null;
+		try {
+			restTemplate = getRestTemplate();
+		} catch (KeyManagementException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (KeyStoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8080/services/SomeService", entity, String.class);
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         String responseString = response.getBody();
         Thread.sleep(1000);
