@@ -1,0 +1,2 @@
+echo "some test message" | ./produce -h 192.168.122.18 -p 61613 -q hello1 -U admin -P admin && ./consume -h 192.168.122.18 -p 61613 -q hello1 -c ./echo-handler -U admin -P admin 2>&1 | tail -10 | grep --line-buffered "some test message"
+echo $?
