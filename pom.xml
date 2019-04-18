@@ -135,6 +135,13 @@
       <version>2.8.5.redhat-00001</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Added to deal with SSL in testing -->
+	<dependency>
+	    <groupId>org.apache.httpcomponents</groupId>
+	    <artifactId>httpclient</artifactId>
+	</dependency>
+
 
   </dependencies>
 

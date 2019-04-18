@@ -1,11 +1,23 @@
 # lets listen on all ports to ensure we can be invoked from the pod IP
 server:
   address: 0.0.0.0
+  port: 8080
+  ssl:
+    keystoreFile: classpath:security/service_ks.p12
+    keystoreType: pkcs12
+    keystorePassword: redhat
+    keyAlias: service
+    clientAuth: want
+    truststore: classpath:security/service_ts.p12
+    truststorePassword: redhat
 
 management:
   address: 0.0.0.0
   port: 8081
+  
 
+security:
+  ignored: /**
 # disable all management endpoints except health
 endpoints:
   enabled: false
