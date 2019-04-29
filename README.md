@@ -333,6 +333,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-conf
 
 3. To ensure Maven does not corrupt/filter characters in the keystore, add the following to the pom:
 
+```xml
 <resources>
     <resource>
         <directory>src/main/resources</directory>
@@ -353,7 +354,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-conf
 Test this setup using SOAP-UI or your preferred client.
 How to set keystores/truststores for a SOAP-UI project:
 https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
-
+```
   
 
 ## Further Documentation
