@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# consume a message from a MQ service using STOMP
+# By Laurent "ker2x" Laborde at http://www.overblog.com/
+#
+# This program is free software. It comes without any warranty, to
+# the extent permitted by applicable law. You can redistribute it
+# and/or modify it under the terms of the Do What The Fuck You Want
+# To Public License, Version 2, as published by Sam Hocevar. See
+# http://sam.zoy.org/wtfpl/COPYING for more details.
+
+# VARIABLES
+MQHOST=
+MQPORT=
+MQQ=
+LOGIN=
+PASS=
+HANDLER=
+HANDLER_OPTION=
+
+# Print usage and exit
+usage() {
+    echo "usage : $0 -h hostname -p port -q queuename -c consumerscript [-U user -P password -o consumerscript option]"
+    exit 1
+}
+
+# Retrieve args and assign to variables
+while getopts "h:p:q:U:P:c:o:" opt; do
+    case $opt in
+        h) MQHOST="$OPTARG";;
+        p) MQPORT="$OPTARG";;
+        q) MQQ="$OPTARG";;
+        U) LOGIN="$OPTARG";;
+        P) PASS="$OPTARG";;
+        c) HANDLER="$OPTARG";;
+        o) HANDLER_OPTION=$OPTARG;;
+        \:) echo "Option -$opt requires an argument."; exit 1;;
+        \?) echo "Invalid option: -$OPTARG"; exit 1;;
+    esac
+done
+
+# Host, port and queue name are mandatory
+if [[ -z $MQHOST ]] || [[ -z $MQPORT ]] || [[ -z $MQQ ]]
+then
+    echo "ERROR : Host, port and queue name are mandatory"
+    usage
+fi
+
+# consume message using socat ( http://www.dest-unreach.org/socat/ )
+# add -v option for debug
+socat tcp4:$MQHOST:$MQPORT SYSTEM:"/usr/bin/env gawk --assign usercmd=$HANDLER --assign usercmdoption=$HANDLER_OPTION --assign queue=$MQQ --assign mylogin=$LOGIN --assign mypass=$PASS -f ./stomp-parser.awk"
+
+# KTHXBYE
+exit 0

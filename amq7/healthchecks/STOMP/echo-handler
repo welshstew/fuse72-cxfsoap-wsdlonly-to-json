@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo Handling a message at $(date).  Message follows:
+cat
+echo '(message ends)'
+exit 0

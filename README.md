@@ -136,6 +136,31 @@ siege --rc=.siegerc
 
 Change the configuration in the `.siegerc` file.
 
+## Getting metrics from the application
+
+Metrics for the application are exposed by the prometheus agent jar if it is added as a javaagent.  A prometheus config file for the application is included to expose metrics for Fuse/Camel/CXF.
+
+```text
+mvn clean package
+java -javaagent:./prometheus/jmx_prometheus_javaagent-0.11.0.jar=9090:./prometheus/config.yml -jar target/fuse72-cxfsoap-wsdlonly-to-json-1.0-SNAPSHOT.jar
+```
+
+This will enable a prometheus metrics endpoint and will serve on http://localhost:9090
+
+```text
+...
+org_apache_camel_ExchangesTotal{context="Soap2Json2AmqContext",processor="\"log2\"",type="processors",} 0.0
+# HELP org_apache_camel_LastProcessingTime Last Processing Time
+# TYPE org_apache_camel_LastProcessingTime gauge
+org_apache_camel_LastProcessingTime{context="Soap2Json2AmqContext",route="\"cxfRoute\"",type="routes",} -1.0
+org_apache_camel_LastProcessingTime{context="Soap2Json2AmqContext",type="context",} -1.0
+org_apache_camel_LastProcessingTime{context="Soap2Json2AmqContext",processor="\"setExchangePattern1\"",type="processors",} -1.0
+org_apache_camel_LastProcessingTime{context="Soap2Json2AmqContext",processor="\"log1\"",type="processors",} -1.0
+org_apache_camel_LastProcessingTime{context="Soap2Json2AmqContext",processor="\"marshal1\"",type="processors",} -1.0
+...
+
+```
+
 ## Points of Note
 
 ### JMS
@@ -192,7 +217,7 @@ The above keystores and truststores were created and given the password `passwor
 
 ### Configure the broker.xml acceptor
 
-The `broker_ks.p12` and `broker_ts.p12` files should reside in the `$BROKER_HOME/etc` directory.
+The `broker_ks.p12` and `broker_ts.p12` files should reside in the `$BROKER_HOME/etc` directory.  Ensure this acceptor is in the `broker.xml` file:
 
 ```xml
 <!-- AMQPS Acceptor.  Listens on default AMQPS port for AMQPS traffic.-->
@@ -217,6 +242,37 @@ Once both broker and client are configured correctly, and the application is run
 2019-04-16 12:31:55.792  INFO 19120 --- [localhost:5671]] o.a.qpid.jms.sasl.SaslMechanismFinder    : Best match for SASL auth was: SASL-PLAIN
 2019-04-16 12:31:55.850  INFO 19120 --- [localhost:5671]] org.apache.qpid.jms.JmsConnection        : Connection ID:5ed21a51-0b0e-44b2-b89f-2c7a9d99c126:1 connected to remote Broker: amqps://localhost:5671
 ```
+
+### Setting up metrics for AMQ7 Broker...
+
+TODO...
+
+## Healthchecks
+
+### AMQ7 Broker
+
+Here are two ways of monitoring the running AMQ7 broker with bash healthchecks:
+
+1.  By using the AMQ7 jolokia endpoint
+2.  By interacting with AMQ7 using STOMP
+
+#### Using Jolokia and Curl
+
+See `./amq7/healthchecks/jolokia`
+
+```text
+curl -d '[{"type":"read","mbean":"hawtio:type=Registry","attribute":"UpdateCounter","config":{}},{"type":"read","mbean":"hawtio:type=TreeWatcher","attribute":"Counter","config":{}},{"type":"read","mbean":"org.apache.activemq.artemis:broker=\"0.0.0.0\"","config":{}}]' -H "Content-Type: application/json" -X POST -u admin:admin http://192.168.122.18:8161/console/jolokia/?maxDepth=7&maxCollectionSize=5000&ignoreErrors=true&canonicalNaming=false
+```
+
+#### Using Bash and STOMP
+
+See `./amq7/healthchecks/STOMP`
+
+```text
+echo "some test message" | ./produce -h 192.168.122.18 -p 61613 -q hello1 -U admin -P admin && ./consume -h 192.168.122.18 -p 61613 -q hello1 -c ./echo-handler -U admin -P admin 2>&1 | tail -10 | grep --line-buffered "some test message"
+echo $?
+```
+
 
 ## Setting up Webserver security
 
@@ -311,3 +367,7 @@ https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
 - https://www.baeldung.com/spring-boot-https-self-signed-certificate
 - https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-configure-ssl
 - [Red Hat Jboss AMQ Supported configurations](https://access.redhat.com/articles/2791941)
+- [Monitoring with the JMXTrans agent](https://developers.redhat.com/blog/2018/06/06/monitoring-red-hat-amq-7-with-the-jmxtrans-agent/)
+- [Jolokia JVM Monitoring](https://developers.redhat.com/blog/2016/03/30/jolokia-jvm-monitoring-in-openshift/)
+- [STOMP with AMQ7 and Python](https://developers.redhat.com/blog/2018/06/14/stomp-with-activemq-artemis-python/)
+- [STOMP with AMQ7 and BASH](http://nullendpoint.com/redhat/2019/04/17/producing-and-consuming-amq7-messages-with-STOMP-and-bash/)
