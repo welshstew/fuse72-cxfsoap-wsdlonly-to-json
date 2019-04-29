@@ -245,7 +245,137 @@ Once both broker and client are configured correctly, and the application is run
 
 ### Setting up metrics for AMQ7 Broker...
 
-TODO...
+We will be using JMX, JMX exporter to gather metrics and expose via http, Prometheus to collect and analyse the collected metrics and Grafana to create user friendly dashboards.
+
+#### Configure the JMX Exporter agent
+
+1- Download the JMX Exporter jar from https://github.com/prometheus/jmx_exporter
+
+![JMX Exporter](./img/jmx-exporter.png)
+
+2- Place the .jar file somewhere accessible to the Java application
+Example: {amp_install_dir}/instances/{instance_name}/bin
+
+3- Create a configuration file for the JMX exporter. Get the artemis-2.yml file from https://github.com/prometheus/jmx_exporter/tree/master/example_configs and place it in the same place as the .jar file
+Example: {amp_install_dir}/instances/{instance_name}/bin
+
+4- Add JVM parameter on artemis Java application to load the JMX Exporter agent on application startup.
+Normally Java applcations have will have a configuration file for specifying JVM parameters. In the case of AMQ, that is the {amp_install_dir}/instances/{instance_name}/etc/artemis.profile file
+
+```text
+- Locate JAVA_ARGS and rename it to JAVA_OPTS
+
+- Create the following entry just after JAVA_OPTS (The variable JAVA_ARGS is used in artemis run script):
+
+    #Variable containing arguments for JMX_EXPORTER and JAVA_OPTS
+    JAVA_ARGS="$JAVA_OPTS -javaagent:{amq_install_dir}/instances/{instance_name}/bin/jmx_prometheus_javaagent-0.11.0.jar=8080:    {amq_install_dir}/instances/{instance_name}/bin/config.yml”
+    
+- Confirm if artemis allows remote JMX access: go to the Artemis script {amq_install_dir}/instances/{instance_name}/bin/artemis and make sure the final command has:
+
+        -Dcom.sun.management.jmxremote=true \
+
+  The final command should look like:
+
+        exec "$JAVACMD" \
+            $JAVA_ARGS \
+            -Xbootclasspath/a:"$LOG_MANAGER" \
+            -Djava.security.auth.login.config="$ARTEMIS_INSTANCE_ETC/login.config" \
+            $ARTEMIS_CLUSTER_PROPS \
+            -classpath "$CLASSPATH" \
+            -Dartemis.home="$ARTEMIS_HOME" \
+            -Dartemis.instance="$ARTEMIS_INSTANCE" \
+            -Djava.library.path="$ARTEMIS_HOME/bin/lib/linux-$(uname -m)" \
+            -Djava.io.tmpdir="$ARTEMIS_INSTANCE/tmp" \
+            -Ddata.dir="$ARTEMIS_DATA_DIR" \
+            -Dartemis.instance.etc="$ARTEMIS_INSTANCE_ETC" \
+            -Djava.util.logging.manager="$ARTEMIS_LOG_MANAGER" \
+            -Dlogging.configuration="$ARTEMIS_LOGGING_CONF" \
+            -Dcom.sun.management.jmxremote=true \
+            $DEBUG_ARGS \
+            org.apache.activemq.artemis.boot.Artemis "$@"
+```
+#### Thats it!! 
+Run the artemis instance normally and verify the exposed artemis metrics in http://localhost:8080/metrics
+
+#### Consuming Metrics with Prometheus
+
+- Download Prometheus and go through the quick start: https://prometheus.io/docs/prometheus/latest/getting_started/
+
+- Create a new prometheus config file -> amq7-monitor.yml or add configurations to an existing one
+Example:
+```text
+global:
+  scrape_interval: 15s # By default, scrape targets every 15 seconds.
+  external_labels:
+    monitor: 'amp7-monitor'
+#rule_files:
+#  - 'prometheus.rules.yml'
+scrape_configs:
+  - job_name: 'amq7'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:8080']
+```
+
+- Launch Prometheus, passing in the configuration file as a parameter, by running the following command:
+
+```text
+./prometheus --config.file=amq7-monitor.yml
+```
+
+- Validate the received metrics
+
+```text
+Go to http://localhost:9090, click Status -> Targets and validate the state of http://localhost:8080/metrics is up     
+```
+
+![Prometheus](./img/prometheus.png)
+
+#### Create Dashboards with Grafana
+
+- Download Grafana from https://grafana.com/grafana/download based on the OS and unzip to a location
+
+- Start the Grafana server ./{GRAFANA_HOME}/bin/grafana-server -> console should be available at localhost:3000
+
+- Create a new data source with:
+
+        * Name: DS_Prometheus
+        * Type: Prometheus
+        * URL: localhost:9090
+
+- Create a new dashboard for Artemis by importing the file from: https://grafana.com/api/dashboards/9087/revisions/1/download and selecting the data source DS_Prometheus (Data source: https://grafana.com/dashboards/9087)
+
+  - Instead of importing directly, download the json file and replace all the text occurrences of “broker” to “$job"
+  - Add the following entry in the list “templating” in dashboard json file:
+
+  ```json
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "amq7",
+          "value": "amq7"
+        },
+        "hide": 0,
+        "label": null,
+        "name": "job",
+        "options": [
+          {
+            "selected": true,
+            "text": "amq7",
+            "value": "amq7"
+          }
+        ],
+        "query": "amq7",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  }
+  ```
+  - Import the json file to create the dashboard
+
+![Grafana](./img/grafana.png)
 
 ## Healthchecks
 
@@ -333,6 +463,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-conf
 
 3. To ensure Maven does not corrupt/filter characters in the keystore, add the following to the pom:
 
+```xml
 <resources>
     <resource>
         <directory>src/main/resources</directory>
@@ -353,7 +484,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-conf
 Test this setup using SOAP-UI or your preferred client.
 How to set keystores/truststores for a SOAP-UI project:
 https://blogs.sap.com/2011/01/06/soap-ui-tool-soap-https-client-authentication/
-
+```
   
 
 ## Further Documentation
