@@ -375,7 +375,7 @@ Go to http://localhost:9090, click Status -> Targets and validate the state of h
   ```
   - Import the json file to create the dashboard
 
-![Grafana](./img/grafana.png)
+![Grafana](./img/grafana1.png)
 
 ## Healthchecks
 
