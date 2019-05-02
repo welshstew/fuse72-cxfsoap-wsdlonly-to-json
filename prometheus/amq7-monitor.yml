@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s # By default, scrape targets every 15 seconds.
+
+  external_labels:
+    monitor: 'amp7-monitor'
+
+#rule_files:
+#  - 'prometheus.rules.yml'
+
+scrape_configs:
+
+  - job_name: 'amq7'
+
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['localhost:8080']
+
