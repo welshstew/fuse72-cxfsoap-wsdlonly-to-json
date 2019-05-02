@@ -1,9 +1,12 @@
 package com.nullendpoint;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.xml.Namespaces;
-import org.apache.camel.dataformat.xmljson.XmlJsonDataFormat;
+import org.json.JSONObject;
+import org.json.XML;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -57,13 +60,6 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        XmlJsonDataFormat xmlJsonFormat = new XmlJsonDataFormat();
-        xmlJsonFormat.setEncoding("UTF-8");
-        xmlJsonFormat.setForceTopLevelObject(false);
-        xmlJsonFormat.setTrimSpaces(true);
-        xmlJsonFormat.setSkipNamespaces(true);
-        xmlJsonFormat.setRemoveNamespacePrefixes(true);
-
         Namespaces ns = null;
 
         for (Map.Entry<String, String> entry : namespaces.entrySet()) {
@@ -76,9 +72,20 @@ public class WsdlOnlyRouteBuilder extends RouteBuilder {
 
         from("cxf://" + webserviceName + "?wsdlURL=" + webserviceWsdlUrl + "&dataFormat=RAW&serviceName=" + webserviceServiceName + "&endpointName=" + webserviceEndpointName).routeId("cxfRoute")
                 .setBody(ns.xpath(webserviceXpath))
+                .to("xslt:xsl/remove-namespaces.xsl")
                 .log("XML body is ${body}")
-                .marshal(xmlJsonFormat)
                 .convertBodyTo(String.class)
+                .process(new Processor() {
+
+                    String rootNode = webserviceXpath.substring(webserviceXpath.lastIndexOf(':')+1);
+
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        int textIndent = 2;
+                        JSONObject xmlJSONObj = XML.toJSONObject((String)exchange.getIn().getBody());
+                        exchange.getIn().setBody(xmlJSONObj.getJSONObject(rootNode).toString(textIndent));
+                    }
+                })
                 .log("Body to go to AMQ is ${body}")
                 .to("direct:sendToJms")
                 .setBody(simple(webserviceSimpleResponse))

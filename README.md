@@ -9,9 +9,20 @@ No JAXB Marshalling, just a plain SOAP body to JSON.  All in two neat camel rout
 ```java
         from("cxf://" + webserviceName + "?wsdlURL=" + webserviceWsdlUrl + "&dataFormat=RAW&serviceName=" + webserviceServiceName + "&endpointName=" + webserviceEndpointName).routeId("cxfRoute")
                 .setBody(ns.xpath(webserviceXpath))
+                .to("xslt:xsl/remove-namespaces.xsl")
                 .log("XML body is ${body}")
-                .marshal(xmlJsonFormat)
                 .convertBodyTo(String.class)
+                .process(new Processor() {
+
+                    String rootNode = webserviceXpath.substring(webserviceXpath.lastIndexOf(':')+1);
+
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        int textIndent = 2;
+                        JSONObject xmlJSONObj = XML.toJSONObject((String)exchange.getIn().getBody());
+                        exchange.getIn().setBody(xmlJSONObj.getJSONObject(rootNode).toString(textIndent));
+                    }
+                })
                 .log("Body to go to AMQ is ${body}")
                 .to("direct:sendToJms")
                 .setBody(simple(webserviceSimpleResponse))
@@ -24,7 +35,7 @@ No JAXB Marshalling, just a plain SOAP body to JSON.  All in two neat camel rout
                 .to("{{artemis.destination}}");
 ```
 
-This application can be configured to any WSDL.  It uses the [camel-xmljson dataformat](http://camel.apache.org/xmljson.html) in order to marshall xml to json.
+This application can be configured to any WSDL.  
 
 ## Application Configuration (application.yml)
 

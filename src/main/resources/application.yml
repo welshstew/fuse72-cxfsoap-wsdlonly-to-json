@@ -1,14 +1,14 @@
 # lets listen on all ports to ensure we can be invoked from the pod IP
 server:
   address: 0.0.0.0
-  ssl:
-    key-store: classpath:security/service_ks.p12
-    key-store-type: pkcs12
-    key-store-password: redhat
-    key-alias: service
-    clientAuth: need
-    trust-store: classpath:security/service_ts.p12
-    trust-store-password: redhat
+#  ssl:
+#    key-store: classpath:security/service_ks.p12
+#    key-store-type: pkcs12
+#    key-store-password: redhat
+#    key-alias: service
+#    clientAuth: need
+#    trust-store: classpath:security/service_ts.p12
+#    trust-store-password: redhat
 
 management:
   address: 0.0.0.0
@@ -28,9 +28,9 @@ camel:
     xml-rests: false
     xml-routes: false
     name: Soap2Json2AmqContext
-
+#?transport.trustStoreLocation=/Users/jtavares/amq-broker-7.2.3/instances/instance/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
 artemis:
-  url: amqps://localhost:5671?transport.trustStoreLocation=/Users/jtavares/amq-broker-7.2.3/instances/instance/etc/client_ts.p12&transport.trustStorePassword=password&transport.verifyHost=false&jms.sendTimeout=5000
+  url: amqp://localhost:5672
   username: admin
   password: admin
   destination: jms:queue:hello
