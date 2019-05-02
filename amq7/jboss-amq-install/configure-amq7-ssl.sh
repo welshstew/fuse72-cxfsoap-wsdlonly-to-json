@@ -16,7 +16,6 @@ cd ../certificates
 cp broker* $BROKER_PATH/etc
 
 # Configure a new SSL acceptor
-#CONTENT=$(echo $AMQ_ACCEPTOR | sed 's/\//\\\//g')
 sed "s|<\/acceptors>|${AMQ_ACCEPTOR}|" $BROKER_PATH/etc/broker.xml > $BROKER_PATH/etc/broker_sed.xml && \
 mv $BROKER_PATH/etc/broker_sed.xml $BROKER_PATH/etc/broker.xml
 
