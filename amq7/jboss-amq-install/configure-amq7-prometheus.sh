@@ -4,8 +4,8 @@
 #
 AMQ_USER=admin
 AMQ_PASSWORD=admin
-AMQ_BASE=/Users/jtavares/amq-broker-7.2.3
-AMQ_HOME=/Users/jtavares/amq-broker-7.2.3
+AMQ_BASE=/opt/jboss/amq/
+AMQ_HOME=/opt/jboss/amq/amq-broker-7.2.4
 BROKER_NAME=mybroker
 BROKER_PATH=$AMQ_HOME/instances/$BROKER_NAME
 
@@ -28,17 +28,13 @@ mv $BROKER_PATH/etc/artemis_sed.profile $BROKER_PATH/etc/artemis.profile
 # Check if JMX remote is enabled
 
 if grep -q "com.sun.management.jmxremote" $BROKER_PATH/bin/artemis; then
-    echo "1"
     if grep  -q "com.sun.management.jmxremote=false" $BROKER_PATH/bin/artemis; then
-        echo "2"
         sed "s|-Dcom.sun.management.jmxremote=false|-Dcom.sun.management.jmxremote=true|" $BROKER_PATH/bin/artemis  > $BROKER_PATH/bin/artemis_sed && \
         mv $BROKER_PATH/bin/artemis_sed $BROKER_PATH/bin/artemis
     else
-        echo "3"
        exit 0
     fi
 else
-    echo "4"
     sed '/-classpath/a\ 
     \    -Dcom.sun.management.jmxremote=true \ \\\
     ' $BROKER_PATH/bin/artemis  > $BROKER_PATH/bin/artemis_sed && \

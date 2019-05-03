@@ -4,8 +4,8 @@
 
 AMQ_USER=admin
 AMQ_PASSWORD=admin
-AMQ_BASE=/Users/jtavares/amq-broker-7.2.3
-AMQ_HOME=/Users/jtavares/amq-broker-7.2.3
+AMQ_BASE=/opt/jboss/amq/
+AMQ_HOME=/opt/jboss/amq/amq-broker-7.2.4
 BROKER_NAME=mybroker
 BROKER_PATH=$AMQ_HOME/instances/$BROKER_NAME
 AMQ_ACCEPTOR='<acceptor name="amqp-ssl">tcp://0.0.0.0:5671?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;useEpoll=true;amqpCredits=1000;amqpMinCredits=300;connectionsAllowed=1000;sslEnabled=true;keyStorePath=broker_ks.p12;keyStorePassword=password;trustStorePath=broker_ts.p12;trustStorePassword=password</acceptor> \
